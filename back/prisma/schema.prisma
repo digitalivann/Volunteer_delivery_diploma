@@ -1,0 +1,122 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator dbml {
+  provider = "prisma-dbml-generator"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE")
+}
+
+model User {
+  id        Int        @id @default(autoincrement())
+  name      String
+  surname   String
+  email     String     @unique
+  phone     String     @unique
+  password  String
+  role      Role
+  hubs      Hub[]
+  paths     Path[]
+  shipments Shipment[]
+}
+
+model Hub {
+  id        Int       @id @default(autoincrement())
+  name      String
+  city      String
+  region    String
+  phone     String    @unique
+  startHour Int
+  endHour   Int
+  status    String  @default("Empty")
+  photoUrl  String?
+  address   String
+  adminId   Int
+  admin     User      @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  hubstops  HubStop[]
+
+  @@unique([city, region, address])
+}
+
+model Path {
+  id        Int       @id @default(autoincrement())
+  startTime DateTime
+  destination String
+  stops     String[]
+  notes     String?
+  driverId  Int
+  hubstops  HubStop[]
+  needs     Need[]
+  driver    User      @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  @@unique([driverId, stops, startTime])
+}
+
+model Need {
+  id     Int      @id @default(autoincrement())
+  name   String
+  status String   @default("Created")
+  type   Aid_Type
+  pathId Int
+  goods  Good[]
+  path   Path     @relation(fields: [pathId], references: [id], onDelete: Cascade)
+
+  @@unique([pathId, name, type])
+}
+
+model Shipment {
+  id           Int       @id @default(autoincrement())
+  creationTime DateTime  @default(now())
+  confirmTime  DateTime?
+  notes        String?
+  status       String    @default("Created")
+  volunteerId  Int
+  hubstopId    Int
+  goods        Good[]
+  hubstop      HubStop   @relation(fields: [hubstopId], references: [id], onDelete: Cascade)
+  volunteer    User      @relation(fields: [volunteerId], references: [id], onDelete: Cascade)
+
+  @@unique([hubstopId, volunteerId])
+}
+
+model Good {
+  id         Int      @id @default(autoincrement())
+  name       String
+  type       Aid_Type
+  shipmentId Int
+  needId     Int?
+  need       Need?    @relation(fields: [needId], references: [id], onDelete: Cascade)
+  shipment   Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@unique([shipmentId, name, type])
+}
+
+model HubStop {
+  id        Int        @id @default(autoincrement())
+  pathId    Int
+  hubId     Int
+  hub       Hub        @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  path      Path       @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  shipments Shipment[]
+
+  @@unique([hubId, pathId])
+}
+
+enum Role {
+  VOLUNTEER
+  DRIVER
+  ADMIN
+}
+
+enum Aid_Type {
+  FOOD
+  CLOTHES
+  MEDICINE
+  MATERIALS
+  GADGETS
+  OTHER
+}

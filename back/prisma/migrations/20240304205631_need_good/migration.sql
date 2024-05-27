@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Good" ADD COLUMN     "needId" INTEGER;
+
+-- AddForeignKey
+ALTER TABLE "Good" ADD CONSTRAINT "Good_needId_fkey" FOREIGN KEY ("needId") REFERENCES "Need"("id") ON DELETE CASCADE ON UPDATE CASCADE;

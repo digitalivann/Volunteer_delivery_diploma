@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Need" ALTER COLUMN "status" SET DEFAULT 'Created',
+ALTER COLUMN "status" SET DATA TYPE TEXT;

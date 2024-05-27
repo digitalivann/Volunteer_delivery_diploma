@@ -1,0 +1,143 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table User {
+  id Int [pk, increment]
+  name String [not null]
+  surname String [not null]
+  email String [unique, not null]
+  phone String [unique, not null]
+  password String [not null]
+  role Role [not null]
+  hubs Hub [not null]
+  paths Path [not null]
+  shipments Shipment [not null]
+}
+
+Table Hub {
+  id Int [pk, increment]
+  name String [not null]
+  city String [not null]
+  region String [not null]
+  phone String [unique, not null]
+  startHour Int [not null]
+  endHour Int [not null]
+  status String [not null, default: 'Empty']
+  photoUrl String
+  address String [not null]
+  adminId Int [not null]
+  admin User [not null]
+  hubstops HubStop [not null]
+
+  indexes {
+    (city, region, address) [unique]
+  }
+}
+
+Table Path {
+  id Int [pk, increment]
+  startTime DateTime [not null]
+  destination String [not null]
+  stops String[] [not null]
+  notes String
+  driverId Int [not null]
+  hubstops HubStop [not null]
+  needs Need [not null]
+  driver User [not null]
+
+  indexes {
+    (driverId, stops, startTime) [unique]
+  }
+}
+
+Table Need {
+  id Int [pk, increment]
+  name String [not null]
+  status String [not null, default: 'Created']
+  type Aid_Type [not null]
+  pathId Int [not null]
+  goods Good [not null]
+  path Path [not null]
+
+  indexes {
+    (pathId, name, type) [unique]
+  }
+}
+
+Table Shipment {
+  id Int [pk, increment]
+  creationTime DateTime [default: `now()`, not null]
+  confirmTime DateTime
+  notes String
+  status String [not null, default: 'Created']
+  volunteerId Int [not null]
+  hubstopId Int [not null]
+  goods Good [not null]
+  hubstop HubStop [not null]
+  volunteer User [not null]
+
+  indexes {
+    (hubstopId, volunteerId) [unique]
+  }
+}
+
+Table Good {
+  id Int [pk, increment]
+  name String [not null]
+  type Aid_Type [not null]
+  shipmentId Int [not null]
+  needId Int
+  need Need
+  shipment Shipment [not null]
+
+  indexes {
+    (shipmentId, name, type) [unique]
+  }
+}
+
+Table HubStop {
+  id Int [pk, increment]
+  pathId Int [not null]
+  hubId Int [not null]
+  hub Hub [not null]
+  path Path [not null]
+  shipments Shipment [not null]
+
+  indexes {
+    (hubId, pathId) [unique]
+  }
+}
+
+Enum Role {
+  VOLUNTEER
+  DRIVER
+  ADMIN
+}
+
+Enum Aid_Type {
+  FOOD
+  CLOTHES
+  MEDICINE
+  MATERIALS
+  GADGETS
+  OTHER
+}
+
+Ref: Hub.adminId > User.id [delete: Cascade]
+
+Ref: Path.driverId > User.id [delete: Cascade]
+
+Ref: Need.pathId > Path.id [delete: Cascade]
+
+Ref: Shipment.hubstopId > HubStop.id [delete: Cascade]
+
+Ref: Shipment.volunteerId > User.id [delete: Cascade]
+
+Ref: Good.needId > Need.id [delete: Cascade]
+
+Ref: Good.shipmentId > Shipment.id [delete: Cascade]
+
+Ref: HubStop.hubId > Hub.id [delete: Cascade]
+
+Ref: HubStop.pathId > Path.id [delete: Cascade]
